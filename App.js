@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { AsyncStorage } from 'react-native'
-import { 
+import {
   createAppContainer,
   createStackNavigator,
   createBottomTabNavigator
@@ -11,7 +11,8 @@ import Home from './components/Home';
 import Add from './components/Add';
 import EachDeck from './components/EachDeck';
 import AddCard from './components/AddCard';
-import Quiz from './components/Quiz'
+import Quiz from './components/Quiz';
+import UserStats from './components/UserStats';
 
 const stackNavigator = createStackNavigator({
   Home: {
@@ -34,9 +35,9 @@ const stackNavigator = createStackNavigator({
   },
   Quiz: {
     screen: Quiz,
-    navigationOptions: {
-      title: 'QUIZ'
-    }
+    navigationOptions: ({navigation})=>({
+      title: navigation.state.params.deckName + ' QUIZ'
+    })
   }
 }, {
   defaultNavigationOptions: {
@@ -61,6 +62,13 @@ const RouteAppContainer = createAppContainer(
         title: 'ADD',
         tabBarIcon: ()=><FontAwesome name="plus" color="white" size={28} />
       }
+    },
+    UserStats: {
+      screen: UserStats,
+      navigationOptions: {
+        title: 'USERSTATS',
+        tabBarIcon: ()=><FontAwesome name="pie-chart" color="white" size={28} />
+      }
     }
   }, {
     tabBarOptions: {
@@ -68,7 +76,8 @@ const RouteAppContainer = createAppContainer(
         backgroundColor: 'grey',
         paddingTop: 7
       },
-      activeTintColor: 'white'
+      activeTintColor: 'white',
+      inactiveTintColor: '#aaa'
     },
   }))
 
@@ -102,13 +111,38 @@ class App extends Component {
       }
     })
   }
-  removeInDeck =(dataObject)=>{
+  addCardInDeck =(deckTitle, cardObj)=>{
+    this.setState(preState=>{
+      let deckObject = preState.Deck_Array.find(eO=>{
+        return eO.deckTitle===deckTitle
+      })
+      deckObject.deckCardContainer = [...deckObject.deckCardContainer, cardObj]
+      return {
+        Deck_Array: [...preState.Deck_Array]
+      }
+    })
+  }
+  makingChoice =(deckTitle, question, choice)=> {
+    this.setState(preState=>{
+      let deckObject = preState.Deck_Array.find(eO=>{
+        return eO.deckTitle===deckTitle
+      })
+      let qObj = deckObject.deckCardContainer.find(eqObj=>{
+        return eqObj.cardQuestion === question
+      });
+      qObj['userRes'] = choice
+      return {
+        Deck_Array: [...preState.Deck_Array]
+      }
+    })
+  }
+  removeInDeck =(deckTitle)=>{
     this.setState(preState=>{
       let editedArray = preState.Deck_Array.filter(eObj=>{
-        return eObj.deckTitle !== dataObject
+        return eObj.deckTitle !== deckTitle
       })
       return {
-        Deck_Array: [...editedArray]
+        Deck_Array: editedArray
       }
     })
   }
@@ -116,7 +150,9 @@ class App extends Component {
     return <RouteAppContainer screenProps={{
       deckArrayData: this.state.Deck_Array,
       addFunc: this.addInDeck,
-      removeFunc: this.removeInDeck
+      addCardFunc: this.addCardInDeck,
+      removeFunc: this.removeInDeck,
+      choiceFunc: this.makingChoice
     }} />
   }
 }

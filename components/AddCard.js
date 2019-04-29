@@ -4,14 +4,35 @@ import {
   TouchableOpacity, Dimensions } from 'react-native';
 
 class AddCard extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      cardQuestion: '',
+      cardAnswer: '',
+      userRes: null
+    }
+  }
   render() {
+    const { navigation, screenProps } = this.props;
     return (
       <View style={styles.outerContainer}>
         <TextInput placeholder="CardQuestion"
+          value={this.state.cardQuestion}
+          onChange={e=>this.setState({cardQuestion: e.nativeEvent.text})}
           style={styles.cardInput}></TextInput>
         <TextInput placeholder="CardAnswer"
+          value={this.state.cardAnswer}
+          onChange={e=>this.setState({cardAnswer: e.nativeEvent.text})}
           style={styles.cardInput}></TextInput>
-        <TouchableOpacity style={styles.cardBtn}>
+        <TouchableOpacity style={styles.cardBtn}
+          onPress={()=>{
+            screenProps.addCardFunc(navigation.state.params.deckName, this.state);
+            this.setState({
+              cardQuestion: '',
+              cardAnswer: ''
+            })
+            navigation.goBack();
+          }}>
           <Text style={styles.cardBtnText}>SUBMIT</Text>
         </TouchableOpacity>
       </View>

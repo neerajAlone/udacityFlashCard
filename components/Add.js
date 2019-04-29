@@ -28,6 +28,7 @@ class Add extends Component {
           onPress={()=>{
             this.props.screenProps.addFunc(this.state);
             this.props.navigation.navigate('Home')
+            this.setState({deckTitle: ''})
           }}
           style={styles.touchContainer}>
           <Text style={styles.btnText}>CREATE DECK</Text>

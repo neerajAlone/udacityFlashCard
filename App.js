@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { AsyncStorage } from 'react-native'
+import { AsyncStorage, Alert, AppState } from 'react-native'
+import { Permissions, Notifications } from 'expo';
 import {
   createAppContainer,
   createStackNavigator,
@@ -85,10 +86,29 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      Deck_Array: null
+      Deck_Array: null,
+      notificationKey: null,
+      someCardNotAttemptDeckTitle: []
     }
   }
   componentWillMount() {
+    AppState.addEventListener('change', (e)=>{
+      if(e === 'background' || e === 'inactive') {
+        this.setState(prevState=>{
+          let mallu = []
+          prevState.Deck_Array.forEach(eDeck=>{
+            let nullArray = eDeck.deckCardContainer.filter(eCard=>eCard.userRes===null)
+            if(nullArray.length !== 0) mallu.push(eDeck.deckTitle);
+          })
+          return { someCardNotAttemptDeckTitle: mallu }
+        })
+        if(this.state.notificationKey === 'TRUE') {
+          this.setUpNotification(Date.now())
+        }
+      } else {
+        Notifications.cancelAllScheduledNotificationsAsync();
+      }
+    })
     AsyncStorage.getItem('DECK_ARRAY', (err, data)=>{
       if(data !== null) {
         this.setState({Deck_Array: [...JSON.parse(data)]})
@@ -101,8 +121,69 @@ class App extends Component {
       }
     })
   }
+  componentDidMount() {
+    Permissions.getAsync(Permissions.NOTIFICATIONS)
+      .then(({status})=>{
+        if(status === 'granted') {
+          Notifications.cancelAllScheduledNotificationsAsync();
+          AsyncStorage.getItem('notificationAllowedByUser', (err, data)=>{
+            if(data) {
+              this.setState({notificationKey: data})
+            } else {
+              AsyncStorage.setItem('notificationAllowedByUser', 'TRUE', err=>{
+                if(!err) {
+                  this.setState({notificationKey: 'TRUE'});
+                }
+              })
+            }
+          })
+        } else {
+          Permissions.askAsync(Permissions.NOTIFICATIONS)
+            .then(userRes=>{
+              if(userRes.status === 'granted') {
+                AsyncStorage.setItem('notificationAllowedByUser', 'TRUE', err=>{
+                  if(!err) {
+                    this.setState({notificationKey: true});
+                  }
+                })
+              } else {
+                Alert.alert('Notifications is required');
+                return
+              }
+            })
+        }
+      })
+  }
   componentDidUpdate() {
     AsyncStorage.setItem('DECK_ARRAY', JSON.stringify([...this.state.Deck_Array]), err=>{})
+  }
+  componentWillUnmount() {
+    AppState.removeEventListener('change', (e)=>{
+      return
+    })
+  }
+
+  restartQuiz =(deckTitle)=> {
+    this.setState(preState=>{
+      let deckObject = preState.Deck_Array.find(eO=>{
+        return eO.deckTitle===deckTitle
+      })
+      deckObject.deckCardContainer.forEach(eCard=>{
+        eCard.userRes = null
+      })
+      return {
+        Deck_Array: [...preState.Deck_Array]
+      }
+    })
+  }
+  setUpNotification =(timeStamp)=>{
+    Notifications.scheduleLocalNotificationAsync({
+      title: 'TITLE',
+      body: 'BODY'
+    }, {
+      time: timeStamp+5*60*1000,
+      repeat: 'day'
+    })
   }
   addInDeck =(dataObject)=>{
     this.setState(preState=>{
@@ -152,7 +233,8 @@ class App extends Component {
       addFunc: this.addInDeck,
       addCardFunc: this.addCardInDeck,
       removeFunc: this.removeInDeck,
-      choiceFunc: this.makingChoice
+      choiceFunc: this.makingChoice,
+      resetFunc: this.restartQuiz
     }} />
   }
 }

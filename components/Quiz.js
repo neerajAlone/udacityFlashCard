@@ -30,7 +30,6 @@ class Quiz extends Component {
     let deckObj = screenProps.deckArrayData.find(eO=>{
       return eO.deckTitle === navigation.state.params.deckName
     })
-    console.log(navigation)
     return (
       <View style={styles.outerContainer}>
       {

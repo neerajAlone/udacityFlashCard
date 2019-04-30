@@ -7,15 +7,17 @@ import {
 
 class Home extends Component {
   render() {
+    const { navigation, screenProps } = this.props;
+    const { deckArrayData } = screenProps;
     return (
       <View style={styles.outerContainer}>
         <ScrollView style={styles.scrollContainer}>
           {
-            this.props.screenProps.deckArrayData === null || this.props.screenProps.deckArrayData.map((eObj, index)=>{
+            deckArrayData && deckArrayData.map((eObj, index)=>{
               return (
                 <TouchableOpacity style={styles.eachDeck}
                   key={index}
-                  onPress={()=>this.props.navigation.navigate('EachDeck', {deckName: eObj.deckTitle})}>
+                  onPress={()=>navigation.navigate('EachDeck', {deckName: eObj.deckTitle})}>
                   <View style={{paddingVertical: 15}}>
                     <Text style={styles.deckTitle}>{eObj.deckTitle}</Text>
                     <Text style={styles.deckTitle2}>{eObj.deckCardContainer.length} cards</Text>

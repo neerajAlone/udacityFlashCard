@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Button } from 'react-native';
 
 class UserStats extends Component {
   render() {
@@ -41,9 +41,17 @@ class UserStats extends Component {
                       }).length
                     }</Text>
                   </View>
+                  <View style={{flexDirection: 'row',
+                    justifyContent: 'space-between', marginTop: 7}}>
+                    <Button title="RESTART QUIZ"
+                      onPress={()=>screenProps.resetFunc(item.deckTitle)} />
+                    <Button title="BACK TO DECK"
+                      onPress={()=>navigation.navigate('EachDeck', {deckName: item.deckTitle})} />
+                  </View>
                 </View>
               )
-            }} keyExtractor={(item, index)=>index.toString()} />:null
+            }} keyExtractor={(item, index)=>index.toString()}
+            showsVerticalScrollIndicator={false} />:null
       }
       </View>
     )

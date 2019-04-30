@@ -2,8 +2,7 @@ import React, {Component} from 'react';
 import {
   View, Text, StyleSheet,
   TextInput, Dimensions,
-  TouchableOpacity,
-  AsyncStorage
+  TouchableOpacity
 } from 'react-native'
 
 class Add extends Component {
@@ -15,6 +14,7 @@ class Add extends Component {
     }
   }
   render() {
+    const { navigation, screenProps } = this.props;
     return (
       <View style={styles.outerContainer}>
         <Text style={styles.textContainer}
@@ -26,8 +26,8 @@ class Add extends Component {
         <TouchableOpacity
           activeOpacity={0.5}
           onPress={()=>{
-            this.props.screenProps.addFunc(this.state);
-            this.props.navigation.navigate('Home')
+            screenProps.addFunc(this.state);
+            navigation.navigate('EachDeck', {deckName: this.state.deckTitle})
             this.setState({deckTitle: ''})
           }}
           style={styles.touchContainer}>
